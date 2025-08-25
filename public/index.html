@@ -1,0 +1,3319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Fitness System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+
+        /* Loading Screen */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ffff;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #00ffff;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* Transition Screen */
+        .transition-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: radial-gradient(circle, rgba(0,255,255,0.2) 0%, rgba(138,43,226,0.1) 50%, transparent 100%);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .transition-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .transition-content {
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
+        }
+
+        .transition-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #00ffff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: textGlow 3s ease-in-out infinite alternate;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+
+        @keyframes textGlow {
+            from {
+                background-position: 0% 50%;
+                filter: drop-shadow(0 0 20px #00ffff);
+            }
+            to {
+                background-position: 100% 50%;
+                filter: drop-shadow(0 0 30px #ff00ff);
+            }
+        }
+
+        .transition-subtitle {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: #cccccc;
+            font-weight: 300;
+        }
+
+        .system-loading {
+            font-size: 1.2rem;
+            color: #00ffff;
+            margin-bottom: 40px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .loading-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 40, 80, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #00ffff;
+            margin-bottom: 40px;
+        }
+
+        .loading-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #8a2be2);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            animation: loadingProgress 4s ease-in-out forwards;
+        }
+
+        @keyframes loadingProgress {
+            0% { width: 0%; }
+            25% { width: 25%; }
+            50% { width: 50%; }
+            75% { width: 75%; }
+            100% { width: 100%; }
+        }
+
+        .continue-btn {
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            color: #ffffff;
+            padding: 20px 50px;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeInButton 1s ease-in-out 4s forwards;
+        }
+
+        @keyframes fadeInButton {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .continue-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px rgba(255, 0, 255, 0.7);
+        }
+        
+        /* Login/Register Screen */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: radial-gradient(circle, rgba(0,255,255,0.1) 0%, transparent 70%);
+        }
+        
+        .auth-panel {
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .auth-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .auth-title {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px #00ffff;
+            position: relative;
+            z-index: 1;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            color: #8a2be2;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 15px #8a2be2;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 40, 80, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            color: #00ffff;
+            font-family: 'Orbitron', monospace;
+            font-size: 16px;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            border-color: #ffffff;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #001f3f, #00ffff);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff0000, #ff4500);
+            color: #fff;
+        }
+
+        .btn-admin {
+            background: linear-gradient(45deg, #8a2be2, #9400d3);
+            color: #fff;
+        }
+        
+        /* Dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .half-width {
+            grid-column: span 2;
+        }
+        
+        .status-panel {
+            background: rgba(0, 20, 40, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+        }
+        
+        .status-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(138, 43, 226, 0.1), transparent);
+            animation: pulse 2s infinite;
+        }
+        
+        .panel-header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .level-display {
+            font-size: 2.5em;
+            font-weight: 900;
+            text-shadow: 0 0 20px #00ffff;
+            margin-bottom: 10px;
+        }
+        
+        .job-title {
+            font-size: 1.2em;
+            color: #8a2be2;
+            margin-bottom: 5px;
+        }
+        
+        .user-title {
+            font-size: 1em;
+            color: #ffffff;
+            opacity: 0.8;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+            transition: all 0.5s ease;
+        }
+
+        /* Fire Effect Base */
+        .fire-text {
+            position: relative;
+            display: inline-block;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            animation: fireFlicker 2s ease-in-out infinite alternate;
+        }
+
+        .fire-text::before,
+        .fire-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            transition: all 0.3s ease;
+        }
+
+        /* 3D Shadow Layers */
+        .fire-text::before {
+            color: rgba(0, 0, 0, 0.8);
+            transform: translate(2px, 2px);
+            z-index: -2;
+        }
+
+        .fire-text::after {
+            background: linear-gradient(45deg, 
+                var(--fire-color-1, #ff4500), 
+                var(--fire-color-2, #ff8c00), 
+                var(--fire-color-3, #ffd700));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transform: translate(-1px, -1px);
+            z-index: -1;
+            filter: blur(1px);
+        }
+
+        /* Fire Animation */
+        @keyframes fireFlicker {
+            0%, 100% {
+                text-shadow: 
+                    0 0 5px var(--fire-glow, #ff4500),
+                    0 0 10px var(--fire-glow, #ff4500),
+                    0 0 15px var(--fire-glow, #ff4500),
+                    0 0 20px var(--fire-glow, #ff4500),
+                    0 0 35px var(--fire-glow, #ff4500),
+                    0 0 40px var(--fire-glow, #ff4500);
+                transform: scale(1) rotate(0deg);
+            }
+            25% {
+                text-shadow: 
+                    0 0 3px var(--fire-glow, #ff4500),
+                    0 0 8px var(--fire-glow, #ff4500),
+                    0 0 12px var(--fire-glow, #ff4500),
+                    0 0 18px var(--fire-glow, #ff4500),
+                    0 0 30px var(--fire-glow, #ff4500),
+                    0 0 35px var(--fire-glow, #ff4500);
+                transform: scale(1.02) rotate(-0.5deg);
+            }
+            50% {
+                text-shadow: 
+                    0 0 7px var(--fire-glow, #ff4500),
+                    0 0 12px var(--fire-glow, #ff4500),
+                    0 0 18px var(--fire-glow, #ff4500),
+                    0 0 25px var(--fire-glow, #ff4500),
+                    0 0 40px var(--fire-glow, #ff4500),
+                    0 0 45px var(--fire-glow, #ff4500);
+                transform: scale(0.98) rotate(0.5deg);
+            }
+            75% {
+                text-shadow: 
+                    0 0 4px var(--fire-glow, #ff4500),
+                    0 0 9px var(--fire-glow, #ff4500),
+                    0 0 14px var(--fire-glow, #ff4500),
+                    0 0 20px var(--fire-glow, #ff4500),
+                    0 0 32px var(--fire-glow, #ff4500),
+                    0 0 38px var(--fire-glow, #ff4500);
+                transform: scale(1.01) rotate(-0.3deg);
+            }
+        }
+
+        /* Intense Fire for High Ranks */
+        @keyframes intenseFire {
+            0%, 100% {
+                text-shadow: 
+                    0 0 8px var(--fire-glow, #ff4500),
+                    0 0 15px var(--fire-glow, #ff4500),
+                    0 0 25px var(--fire-glow, #ff4500),
+                    0 0 35px var(--fire-glow, #ff4500),
+                    0 0 50px var(--fire-glow, #ff4500),
+                    0 0 70px var(--fire-glow, #ff4500),
+                    0 0 90px var(--fire-glow, #ff4500);
+                transform: scale(1) rotate(0deg);
+                filter: brightness(1.2) contrast(1.3);
+            }
+            33% {
+                text-shadow: 
+                    0 0 5px var(--fire-glow, #ff4500),
+                    0 0 12px var(--fire-glow, #ff4500),
+                    0 0 20px var(--fire-glow, #ff4500),
+                    0 0 30px var(--fire-glow, #ff4500),
+                    0 0 45px var(--fire-glow, #ff4500),
+                    0 0 60px var(--fire-glow, #ff4500),
+                    0 0 80px var(--fire-glow, #ff4500);
+                transform: scale(1.03) rotate(-1deg);
+                filter: brightness(1.1) contrast(1.2);
+            }
+            66% {
+                text-shadow: 
+                    0 0 10px var(--fire-glow, #ff4500),
+                    0 0 18px var(--fire-glow, #ff4500),
+                    0 0 30px var(--fire-glow, #ff4500),
+                    0 0 40px var(--fire-glow, #ff4500),
+                    0 0 55px var(--fire-glow, #ff4500),
+                    0 0 75px var(--fire-glow, #ff4500),
+                    0 0 95px var(--fire-glow, #ff4500);
+                transform: scale(0.97) rotate(1deg);
+                filter: brightness(1.3) contrast(1.4);
+            }
+        }
+
+        /* Legendary Fire for Shadow Monarch */
+        @keyframes shadowFire {
+            0%, 100% {
+                text-shadow: 
+                    0 0 10px #000000,
+                    0 0 20px #4b0082,
+                    0 0 30px #8b00ff,
+                    0 0 40px #9400d3,
+                    0 0 60px #4b0082,
+                    0 0 80px #000000;
+                transform: scale(1) rotate(0deg);
+                color: #000000;
+                background: linear-gradient(45deg, #000000, #4b0082, #8b00ff);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            50% {
+                text-shadow: 
+                    0 0 15px #000000,
+                    0 0 25px #4b0082,
+                    0 0 35px #8b00ff,
+                    0 0 50px #9400d3,
+                    0 0 70px #4b0082,
+                    0 0 90px #000000;
+                transform: scale(1.05) rotate(0deg);
+                background: linear-gradient(45deg, #4b0082, #8b00ff, #000000);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+        }
+        
+        .progress-bars {
+            margin: 20px 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .progress-bar {
+            margin-bottom: 15px;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        .progress-track {
+            height: 20px;
+            background: rgba(0, 40, 80, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #00ffff;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #8a2be2);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-item {
+            background: rgba(0, 40, 80, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        
+        .stat-points {
+            text-align: center;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-points h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px #ffd700;
+        }
+        
+        .stat-distribution {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(0, 40, 80, 0.6);
+            border-radius: 8px;
+        }
+        
+        .stat-plus {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-plus:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        .stat-plus:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Activity Panel */
+        .activity-panel {
+            background: rgba(0, 20, 40, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+        }
+        
+        .activity-form {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .activity-form h3 {
+            color: #00ffff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px #00ffff;
+        }
+
+        /* Reps Input Styling */
+        .reps-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .reps-input label {
+            color: #00ffff;
+            font-weight: 700;
+            min-width: 80px;
+        }
+
+        .reps-input input {
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(0, 40, 80, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 6px;
+            color: #00ffff;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .activity-history {
+            margin-top: 30px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .activity-item {
+            background: rgba(0, 40, 80, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .activity-name {
+            font-weight: 700;
+            color: #00ffff;
+        }
+
+        .activity-details {
+            font-size: 0.8em;
+            color: #cccccc;
+            margin-top: 5px;
+        }
+        
+        .activity-exp {
+            color: #ffd700;
+            font-weight: 700;
+            text-shadow: 0 0 10px #ffd700;
+        }
+        
+        .activity-date {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        /* Daily Quest Panel */
+        .quest-panel {
+            background: rgba(0, 20, 40, 0.95);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+        }
+
+        .quest-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            animation: pulse 3s infinite;
+        }
+
+        .quest-panel h3 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px #ffd700;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            font-size: 1.4em;
+        }
+
+        .quest-item {
+            background: rgba(0, 40, 80, 0.8);
+            border: 1px solid #ffd700;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .quest-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .quest-item.completed {
+            border-color: #00ff00;
+            background: rgba(0, 100, 0, 0.2);
+        }
+
+        .quest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .quest-title {
+            font-weight: 700;
+            color: #ffd700;
+            font-size: 1.1em;
+        }
+
+        .quest-reward {
+            color: #00ff00;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .quest-description {
+            color: #cccccc;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .quest-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .quest-progress-bar {
+            flex: 1;
+            height: 12px;
+            background: rgba(0, 40, 80, 0.8);
+            border-radius: 6px;
+            border: 1px solid #ffd700;
+            overflow: hidden;
+            margin-right: 10px;
+        }
+
+        .quest-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4a);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .quest-progress-text {
+            color: #ffd700;
+            font-weight: 700;
+            font-size: 0.8em;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .quest-claim-btn {
+            background: linear-gradient(45deg, #00ff00, #32cd32);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8em;
+            text-transform: uppercase;
+        }
+
+        .quest-claim-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .quest-claim-btn:disabled {
+            background: #666;
+            color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Leaderboard Panel */
+        .leaderboard-panel {
+            background: rgba(0, 20, 40, 0.95);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+        }
+
+        .leaderboard-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            animation: pulse 3s infinite;
+        }
+
+        .leaderboard-panel h3 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px #ffd700;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            font-size: 1.4em;
+        }
+
+        .leaderboard-list {
+            position: relative;
+            z-index: 1;
+        }
+
+        .leaderboard-item {
+            background: rgba(0, 40, 80, 0.8);
+            border: 1px solid #ffd700;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .leaderboard-item:first-child {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .leaderboard-item:nth-child(2) {
+            border-color: #c0c0c0;
+            background: rgba(192, 192, 192, 0.1);
+        }
+
+        .leaderboard-item:nth-child(3) {
+            border-color: #cd7f32;
+            background: rgba(205, 127, 50, 0.1);
+        }
+
+        .rank-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .rank-number {
+            font-size: 1.2em;
+            font-weight: 900;
+            width: 30px;
+            text-align: center;
+        }
+
+        .rank-number.rank-1 { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
+        .rank-number.rank-2 { color: #c0c0c0; text-shadow: 0 0 10px #c0c0c0; }
+        .rank-number.rank-3 { color: #cd7f32; text-shadow: 0 0 10px #cd7f32; }
+
+        .hunter-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hunter-name {
+            font-weight: 700;
+            color: #00ffff;
+            font-size: 1.1em;
+        }
+
+        .hunter-stats {
+            font-size: 0.8em;
+            opacity: 0.8;
+            color: #cccccc;
+        }
+
+        .hunter-level {
+            color: #ffd700;
+            font-weight: 700;
+            text-shadow: 0 0 10px #ffd700;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background: rgba(0, 20, 40, 0.95);
+            border-bottom: 2px solid #00ffff;
+            padding: 15px 0;
+            box-shadow: 0 2px 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5em;
+            font-weight: 900;
+            text-shadow: 0 0 20px #00ffff;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 700;
+            color: #00ffff;
+        }
+        
+        .user-level {
+            font-size: 0.9em;
+            color: #ffd700;
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            background: rgba(0, 20, 40, 0.95);
+            border: 2px solid #8a2be2;
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.3);
+        }
+
+        .admin-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(138, 43, 226, 0.1), transparent);
+            animation: pulse 3s infinite;
+        }
+
+        .admin-panel h3 {
+            color: #8a2be2;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px #8a2be2;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            font-size: 1.4em;
+        }
+
+        .admin-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #8a2be2;
+            position: relative;
+            z-index: 2;
+        }
+
+        .admin-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            color: #8a2be2;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+            z-index: 3;
+        }
+
+        .admin-tab.active {
+            color: #00ffff;
+            border-bottom: 3px solid #00ffff;
+        }
+
+        .admin-tab:hover {
+            color: #00ffff;
+        }
+
+        .admin-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .admin-section {
+            display: none;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .admin-table th {
+            color: #8a2be2;
+            font-weight: 700;
+        }
+
+        .admin-table tr:hover {
+            background: rgba(138, 43, 226, 0.1);
+        }
+
+        .admin-table .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .admin-form {
+            margin-top: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        /* Animations */
+        @keyframes levelUp {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes expGain {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
+        }
+        
+        .level-up-animation {
+            animation: levelUp 0.8s ease;
+        }
+        
+        .exp-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 215, 0, 0.9);
+            color: #000;
+            padding: 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.2em;
+            z-index: 1000;
+            animation: expGain 2s ease forwards;
+        }
+
+        @keyframes titleUpgrade {
+            0% { 
+                transform: translate(-50%, -50%) scale(0.5); 
+                opacity: 0; 
+            }
+            20% { 
+                transform: translate(-50%, -50%) scale(1.2); 
+                opacity: 1; 
+            }
+            80% { 
+                transform: translate(-50%, -50%) scale(1); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(0.8); 
+                opacity: 0; 
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .half-width {
+                grid-column: span 1;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .navbar-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .transition-title {
+                font-size: 2.5rem;
+            }
+
+            .transition-subtitle {
+                font-size: 1.4rem;
+            }
+
+            .auth-panel {
+                margin: 20px;
+                padding: 30px;
+            }
+
+            .leaderboard-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .rank-info {
+                justify-content: center;
+            }
+
+            .admin-tabs {
+                flex-wrap: wrap;
+            }
+
+            .admin-table .actions {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .transition-title {
+                font-size: 2rem;
+            }
+
+            .transition-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .continue-btn {
+                padding: 15px 30px;
+                font-size: 1rem;
+            }
+
+            .auth-panel {
+                margin: 10px;
+                padding: 20px;
+            }
+
+            .auth-title {
+                font-size: 2em;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stat-item {
+                padding: 10px;
+            }
+
+            .level-display {
+                font-size: 2em;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            .dashboard {
+                gap: 15px;
+            }
+
+            .status-panel, .activity-panel, .leaderboard-panel, .quest-panel {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Processing Neural Interface...</div>
+    </div>
+
+    <!-- Transition Screen -->
+    <div id="transitionScreen" class="transition-screen">
+        <div class="transition-content">
+            <h1 class="transition-title">System Access Granted</h1>
+            <p class="transition-subtitle">Entering Fitness Protocol</p>
+            <div class="system-loading">Initializing Neural Interface...</div>
+            
+            <div class="loading-bar">
+                <div class="loading-fill"></div>
+            </div>
+            
+            <button class="continue-btn" onclick="showAuthScreen()">Enter Virtual World</button>
+        </div>
+    </div>
+
+    <!-- Auth Screen -->
+    <div id="authScreen" class="auth-container hidden">
+        <div class="auth-panel">
+            <h1 class="auth-title">LEVELING</h1>
+            <h2 class="auth-subtitle">FITNESS SYSTEM</h2>
+            
+            <div id="errorMessage" class="error-message hidden"></div>
+            <div id="successMessage" class="success-message hidden"></div>
+            
+            <!-- Login Form -->
+            <div id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">Hunter ID</label>
+                    <input type="text" id="loginUsername" placeholder="Enter your Hunter ID">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Neural Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter neural access code">
+                </div>
+                <div class="form-group">
+                    <button class="btn" id="loginBtn" onclick="login()">Connect to System</button>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-secondary" onclick="showRegister()">Register New Hunter</button>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-secondary" onclick="loginDummy()">Demo Hunter Access</button>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-admin" onclick="showAdminLogin()">Admin Portal</button>
+                </div>
+            </div>
+            
+            <!-- Register Form -->
+            <div id="registerForm" class="hidden">
+                <div class="form-group">
+                    <label for="registerUsername">Hunter ID</label>
+                    <input type="text" id="registerUsername" placeholder="Choose your Hunter ID">
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Neural Link Email</label>
+                    <input type="email" id="registerEmail" placeholder="Enter your neural link email">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Neural Password</label>
+                    <input type="password" id="registerPassword" placeholder="Create neural access code">
+                </div>
+                <div class="form-group">
+                    <button class="btn" id="registerBtn" onclick="register()">Initialize Hunter Profile</button>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-secondary" onclick="showLogin()">Return to Login</button>
+                </div>
+            </div>
+
+            <!-- Admin Login Form -->
+            <div id="adminLoginForm" class="hidden">
+                <div class="form-group">
+                    <label for="adminUsername">Admin ID</label>
+                    <input type="text" id="adminUsername" placeholder="Enter admin username">
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Admin Password</label>
+                    <input type="password" id="adminPassword" placeholder="Enter admin password">
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-admin" id="adminLoginBtn" onclick="adminLogin()">Access Admin Portal</button>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-secondary" onclick="showLogin()">Back to User Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-brand">LEVELING.COM</div>
+                <div class="navbar-user">
+                    <div class="user-info">
+                        <div class="user-name" id="navUsername">Hunter</div>
+                        <div class="user-level" id="navLevel">Level 1</div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="logout()">Disconnect</button>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Dashboard -->
+        <div class="container">
+            <div class="dashboard">
+                <!-- Status Panel -->
+                <div class="status-panel">
+                    <div class="panel-header">
+                        <div class="level-display" id="levelDisplay">LV. 1</div>
+                        <div class="job-title">FITNESS HUNTER</div>
+                        <div class="user-title">NOVICE TRAINEE</div>
+                    </div>
+                    
+                    <div class="progress-bars">
+                        <div class="progress-bar">
+                            <div class="progress-label">
+                                <span>EXP</span>
+                                <span id="expDisplay">0 / 100</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="expBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-label">
+                                <span>HP</span>
+                                <span id="hpDisplay">100 / 100</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="hpBar" style="width: 100%; background: linear-gradient(90deg, #ff4444, #ff8888)"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-label">
+                                <span>MP</span>
+                                <span id="mpDisplay">50 / 50</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="mpBar" style="width: 100%; background: linear-gradient(90deg, #4444ff, #8888ff)"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">STR</div>
+                            <div class="stat-value" id="strValue">10</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">AGI</div>
+                            <div class="stat-value" id="agiValue">10</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">INT</div>
+                            <div class="stat-value" id="intValue">10</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">STM</div>
+                            <div class="stat-value" id="stmValue">10</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">VIT</div>
+                            <div class="stat-value" id="vitValue">10</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">PER</div>
+                            <div class="stat-value" id="perValue">10</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-points">
+                        <h3>STAT POINTS: <span id="statPointsDisplay">0</span></h3>
+                        <div class="stat-distribution">
+                            <span>STR</span>
+                            <button class="stat-plus" onclick="addStat('str')">+</button>
+                        </div>
+                        <div class="stat-distribution">
+                            <span>AGI</span>
+                            <button class="stat-plus" onclick="addStat('agi')">+</button>
+                        </div>
+                        <div class="stat-distribution">
+                            <span>INT</span>
+                            <button class="stat-plus" onclick="addStat('int')">+</button>
+                        </div>
+                        <div class="stat-distribution">
+                            <span>STM</span>
+                            <button class="stat-plus" onclick="addStat('stm')">+</button>
+                        </div>
+                        <div class="stat-distribution">
+                            <span>VIT</span>
+                            <button class="stat-plus" onclick="addStat('vit')">+</button>
+                        </div>
+                        <div class="stat-distribution">
+                            <span>PER</span>
+                            <button class="stat-plus" onclick="addStat('per')">+</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Activity Panel -->
+                <div class="activity-panel">
+                    <div class="activity-form">
+                        <h3>LOG FITNESS ACTIVITY</h3>
+                        <div class="form-group">
+                            <label for="activityName">Training Session</label>
+                            <input type="text" id="activityName" placeholder="e.g., Combat Training, Neural Cardio">
+                        </div>
+                        <div class="form-group">
+                            <label for="activityDuration">Duration (minutes)</label>
+                            <input type="number" id="activityDuration" placeholder="30">
+                        </div>
+                        <div class="form-group">
+                            <label for="activityIntensity">Training Intensity</label>
+                            <select id="activityIntensity">
+                                <option value="low">Low Intensity (x1.5)</option>
+                                <option value="medium">Medium Intensity (x2.5)</option>
+                                <option value="high">High Intensity (x3.5)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="activityReps">Repetitions (optional)</label>
+                            <input type="number" id="activityReps" placeholder="e.g., 50 push-ups">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn" id="activityBtn" onclick="addActivity()">Complete Training</button>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-history">
+                        <h3>TRAINING LOG</h3>
+                        <div id="activityList">
+                            <!-- Activities will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Quest Panel -->
+                <div class="quest-panel">
+                    <h3>⚔️ DAILY QUESTS ⚔️</h3>
+                    <div id="questList">
+                        <!-- Quests will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Leaderboard Panel -->
+                <div class="leaderboard-panel full-width">
+                    <h3>🏆 HUNTER LEADERBOARD 🏆</h3>
+                    <div id="leaderboardList" class="leaderboard-list">
+                        <!-- Leaderboard will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Application -->
+    <div id="adminApp" class="hidden">
+        <!-- Admin Navbar -->
+        <nav class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-brand">LEVELING.COM ADMIN</div>
+                <div class="navbar-user">
+                    <div class="user-info">
+                        <div class="user-name" id="adminUsernameDisplay">Admin</div>
+                        <div class="user-level">System Administrator</div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="adminLogout()">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Admin Dashboard -->
+        <div class="container">
+            <div class="admin-panel full-width">
+                <h3>SYSTEM ADMINISTRATION PANEL</h3>
+                
+                <div class="admin-tabs">
+                    <div class="admin-tab active" onclick="switchAdminTab('users')">User Management</div>
+                    <div class="admin-tab" onclick="switchAdminTab('content')">Content Management</div>
+                </div>
+                
+                <div class="admin-content">
+                    <!-- User Management Tab -->
+                    <div id="usersTab" class="admin-section active">
+                        <h4>User Management</h4>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Level</th>
+                                    <th>Status</th>
+                                    <th>Last Active</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userList">
+                                <!-- Users will be populated here -->
+                            </tbody>
+                        </table>
+                        
+                        <div class="admin-form">
+                            <h4>Edit User</h4>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label for="editUserId">User ID</label>
+                                        <input type="text" id="editUserId" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editUsername">Username</label>
+                                        <input type="text" id="editUsername">
+                                    </div>
+                                </div>
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label for="editLevel">Level</label>
+                                        <input type="number" id="editLevel">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editStatus">Status</label>
+                                        <select id="editStatus">
+                                            <option value="active">Active</option>
+                                            <option value="banned">Banned</option>
+                                            <option value="suspended">Suspended</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn" onclick="saveUserChanges()">Save Changes</button>
+                                <button class="btn btn-secondary" onclick="resetPassword()">Reset Password</button>
+                                <button class="btn btn-danger" onclick="deleteUser()">Delete User</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Management Tab -->
+                    <div id="contentTab" class="admin-section">
+                        <h4>Activity Types</h4>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Activity Name</th>
+                                    <th>Base EXP</th>
+                                    <th>Category</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityTypesList">
+                                <!-- Activity types will be populated here -->
+                            </tbody>
+                        </table>
+                        
+                        <div class="admin-form">
+                            <h4>Add/Edit Activity Type</h4>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label for="activityTypeId">Activity ID</label>
+                                        <input type="text" id="activityTypeId" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="activityTypeName">Name</label>
+                                        <input type="text" id="activityTypeName">
+                                    </div>
+                                </div>
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label for="activityTypeExp">Base EXP</label>
+                                        <input type="number" id="activityTypeExp">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="activityTypeCategory">Category</label>
+                                        <input type="text" id="activityTypeCategory">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn" onclick="saveActivityType()">Save</button>
+                                <button class="btn btn-secondary" onclick="clearActivityForm()">Clear</button>
+                                <button class="btn btn-danger" onclick="deleteActivityType()">Delete</button>
+                            </div>
+                        </div>
+                        
+                        <h4>Quest Management</h4>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Quest Name</th>
+                                    <th>Type</th>
+                                    <th>Target</th>
+                                    <th>Reward</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="questsList">
+                                <!-- Quests will be populated here -->
+                            </tbody>
+                        </table>
+                        
+                        <div class="admin-form">
+                            <h4>Add/Edit Quest</h4>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label for="questId">Quest ID</label>
+                                        <input type="text" id="questId" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="questTitle">Title</label>
+                                        <input type="text" id="questTitle">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="questDescription">Description</label>
+                                        <input type="text" id="questDescription">
+                                    </div>
+                                </div>
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label for="questType">Type</label>
+                                        <select id="questType">
+                                            <option value="duration">Duration</option>
+                                            <option value="total_duration">Total Duration</option>
+                                            <option value="reps">Repetitions</option>
+                                            <option value="sessions">Sessions</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="questTarget">Target Value</label>
+                                        <input type="number" id="questTarget">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="questReward">EXP Reward</label>
+                                        <input type="number" id="questReward">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn" onclick="saveQuest()">Save</button>
+                                <button class="btn btn-secondary" onclick="clearQuestForm()">Clear</button>
+                                <button class="btn btn-danger" onclick="deleteQuest()">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // API Service - Centralized backend communication
+   class ApiService {
+    static BASE_URL = "http://localhost:3000/api";
+
+    static getHeaders() {
+        const token = localStorage.getItem('vr_auth_token');
+        return {
+            "Content-Type": "application/json",
+            ...(token && { "Authorization": `Bearer ${token}` })
+        };
+    }
+
+
+            // Handle API responses
+            static async handleResponse(response) {
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP error! status: ${response.status}`);
+                }
+                
+                return data;
+            }
+            
+            // Authentication endpoints
+           static async login(username, password) {
+    const response = await fetch(`${this.BASE_URL}/login`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify({ username, password })
+    });
+    
+    return this.handleResponse(response);
+}
+
+            
+            static async register(username, email, password) {
+                const response = await fetch(`${this.BASE_URL}/register`, { // Changed from /auth/register
+                    method: 'POST',
+                    headers: this.getHeaders(),
+                    body: JSON.stringify({ username, email, password })
+                });
+                
+                return this.handleResponse(response);
+            }
+            
+            static async adminLogin(username, password) {
+                // This endpoint needs to be implemented in server.js
+                const response = await fetch(`${this.BASE_URL}/admin/login`, { // Changed from /auth/admin/login
+                    method: 'POST',
+                    headers: this.getHeaders(),
+                    body: JSON.stringify({ username, password })
+                });
+                
+                return this.handleResponse(response);
+            }
+            
+            // User profile endpoints
+            static async getProfile() { // Removed userId parameter as it's taken from localStorage
+                const userId = localStorage.getItem('userId'); // Get userId from localStorage
+                if (!userId) {
+                    throw new Error("User ID not found in local storage. Please log in.");
+                }
+                const response = await fetch(`${this.BASE_URL}/profile/${userId}`, {
+                    method: "GET",
+                    headers: this.getHeaders()
+                });
+
+                return this.handleResponse(response);
+            }
+            
+            static async updateStats(statName) {
+                const response = await fetch(`${this.BASE_URL}/stats`, { // Changed from /user/stats
+                    method: 'POST', // Changed from PUT to POST as per server.js
+                    headers: this.getHeaders(),
+                    body: JSON.stringify({ statName }) // Changed from stat to statName
+                });
+                
+                return this.handleResponse(response);
+            }
+            
+            // Activity endpoints
+            static async addActivity(activityData) {
+                const response = await fetch(`${this.BASE_URL}/activity`, { // Changed from /activities
+                    method: 'POST',
+                    headers: this.getHeaders(),
+                    body: JSON.stringify(activityData)
+                });
+                
+                return this.handleResponse(response);
+            }
+            
+            static async getActivities(limit = 10) {
+                // This endpoint needs to be implemented in server.js
+                // For now, it will return dummy data or fail
+                // You might want to fetch from user.activities in profile or add a dedicated endpoint
+                const userId = localStorage.getItem('userId');
+                if (!userId) {
+                    throw new Error("User ID not found for fetching activities.");
+                }
+                const response = await fetch(`${this.BASE_URL}/profile/${userId}`, { // Fetch activities from profile
+                    headers: this.getHeaders()
+                });
+                const data = await this.handleResponse(response);
+                return { activities: data.user.activities || [] }; // Return activities from user profile
+            }
+            
+            // Quest endpoints
+            static async getDailyQuests() {
+                // This endpoint needs to be implemented in server.js
+                // For now, it will return dummy data or fail
+                // You might want to fetch from user.dailyQuests in profile or add a dedicated endpoint
+                const userId = localStorage.getItem('userId');
+                if (!userId) {
+                    throw new Error("User ID not found for fetching quests.");
+                }
+                const response = await fetch(`${this.BASE_URL}/profile/${userId}`, { // Fetch quests from profile
+                    headers: this.getHeaders()
+                });
+                const data = await this.handleResponse(response);
+                return { quests: data.user.dailyQuests || [] }; // Return dailyQuests from user profile
+            }
+            
+            static async claimQuest(questId) {
+                const response = await fetch(`${this.BASE_URL}/quests/claim`, { // Changed from /quests/${questId}/claim
+                    method: 'POST',
+                    headers: this.getHeaders(),
+                    body: JSON.stringify({ questId }) // Ensure questId is sent in body
+                });
+                
+                return this.handleResponse(response);
+            }
+            
+            // Leaderboard endpoints
+            static async getLeaderboard(limit = 20) {
+                const response = await fetch(`${this.BASE_URL}/leaderboard?limit=${limit}`, {
+                    headers: this.getHeaders()
+                });
+                
+                return this.handleResponse(response);
+            }
+            
+            // Admin endpoints (These need to be implemented in server.js)
+            static async getAllUsers() {
+                const response = await fetch(`${this.BASE_URL}/admin/users`, {
+                    headers: this.getHeaders()
+                });
+                return this.handleResponse(response);
+            }
+            
+            static async updateUser(userId, userData) {
+                const response = await fetch(`${this.BASE_URL}/admin/users/${userId}`, {
+                    method: 'PUT',
+                    headers: this.getHeaders(),
+                    body: JSON.stringify(userData)
+                });
+                return this.handleResponse(response);
+            }
+            
+            static async deleteUser(userId) {
+                const response = await fetch(`${this.BASE_URL}/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: this.getHeaders()
+                });
+                return this.handleResponse(response);
+            }
+            
+            static async getAllQuests() {
+                const response = await fetch(`${this.BASE_URL}/admin/quests`, {
+                    headers: this.getHeaders()
+                });
+                return this.handleResponse(response);
+            }
+            
+            static async createQuest(questData) {
+                const response = await fetch(`${this.BASE_URL}/admin/quests`, {
+                    method: 'POST',
+                    headers: this.getHeaders(),
+                    body: JSON.stringify(questData)
+                });
+                return this.handleResponse(response);
+            }
+            
+            static async updateQuest(questId, questData) {
+                const response = await fetch(`${this.BASE_URL}/admin/quests/${questId}`, {
+                    method: 'PUT',
+                    headers: this.getHeaders(),
+                    body: JSON.stringify(questData)
+                });
+                return this.handleResponse(response);
+            }
+            
+            static async deleteQuest(questId) {
+                const response = await fetch(`${this.BASE_URL}/admin/quests/${questId}`, {
+                    method: 'DELETE',
+                    headers: this.getHeaders()
+                });
+                return this.handleResponse(response);
+            }
+            
+            static async getActivityTypes() {
+                const response = await fetch(`${this.BASE_URL}/admin/activity-types`, {
+                    headers: this.getHeaders()
+                });
+                return this.handleResponse(response);
+            }
+            
+            static async createActivityType(typeData) {
+                const response = await fetch(`${this.BASE_URL}/admin/activity-types`, {
+                    method: 'POST',
+                    headers: this.getHeaders(),
+                    body: JSON.stringify(typeData)
+                });
+                return this.handleResponse(response);
+            }
+            
+            static async updateActivityType(typeId, typeData) {
+                const response = await fetch(`${this.BASE_URL}/admin/activity-types/${typeId}`, {
+                    method: 'PUT',
+                    headers: this.getHeaders(),
+                    body: JSON.stringify(typeData)
+                });
+                return this.handleResponse(response);
+            }
+            
+            static async deleteActivityType(typeId) {
+                const response = await fetch(`${this.BASE_URL}/admin/activity-types/${typeId}`, {
+                    method: 'DELETE',
+                    headers: this.getHeaders()
+                });
+                return this.handleResponse(response);
+            }
+        }
+        
+        // Global variables
+        let currentUser = null;
+        let authToken = null;
+        let userData = null;
+        let isAdmin = false;
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            setupEventListeners();
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Enter key for forms
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    handleEnterKey();
+                }
+            });
+        }
+
+        // Handle Enter key press
+        function handleEnterKey() {
+            if (!document.getElementById('transitionScreen').classList.contains('hidden')) {
+                showAuthScreen();
+            } else if (!document.getElementById('authScreen').classList.contains('hidden')) {
+                if (!document.getElementById('loginForm').classList.contains('hidden')) {
+                    login();
+                } else if (!document.getElementById('adminLoginForm').classList.contains('hidden')) {
+                    adminLogin();
+                } else {
+                    register();
+                }
+            } else if (!document.getElementById('mainApp').classList.contains('hidden')) {
+                if (document.getElementById('activityName') === document.activeElement ||
+                    document.getElementById('activityDuration') === document.activeElement) {
+                    addActivity();
+                }
+            }
+        }
+
+        // Utility functions
+        function showLoading(text = 'Processing Neural Interface...') {
+            const overlay = document.getElementById('loadingOverlay');
+            const loadingText = overlay.querySelector('.loading-text');
+            loadingText.textContent = text;
+            overlay.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            setTimeout(() => {
+                errorDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.classList.remove('hidden');
+            setTimeout(() => {
+                successDiv.classList.add('hidden');
+            }, 3000);
+        }
+
+        function setButtonLoading(buttonId, loading) {
+            const button = document.getElementById(buttonId);
+            if (loading) {
+                button.disabled = true;
+                button.textContent = 'Processing...';
+            } else {
+                button.disabled = false;
+                // Reset button text based on ID
+                if (buttonId === 'loginBtn') button.textContent = 'Connect to System';
+                if (buttonId === 'registerBtn') button.textContent = 'Initialize Hunter Profile';
+                if (buttonId === 'activityBtn') button.textContent = 'Complete Training';
+                if (buttonId === 'adminLoginBtn') button.textContent = 'Access Admin Portal';
+            }
+        }
+
+        // Authentication functions
+        function showAuthScreen() {
+            document.getElementById('transitionScreen').classList.add('hidden');
+            document.getElementById('authScreen').classList.remove('hidden');
+            showLogin();
+        }
+        
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('adminLoginForm').classList.add('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+        }
+        
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+            document.getElementById('adminLoginForm').classList.add('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+        }
+
+        function showAdminLogin() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('adminLoginForm').classList.remove('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+        }
+        
+        async function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            setButtonLoading('loginBtn', true);
+            showLoading('Establishing Neural Connection...');
+            
+            try {
+                const result = await ApiService.login(username, password);
+                
+                // Save auth data
+                localStorage.setItem('vr_auth_token', result.token);
+                localStorage.setItem('userId', result.user.id);
+                
+                // Update global state
+                authToken = result.token;
+                userData = result.user;
+                currentUser = userData.username;
+                
+                showSuccess('Neural connection established');
+                setTimeout(() => {
+                    showMainApp();
+                }, 1000);
+                
+            } catch (error) {
+                showError(error.message || 'Login failed');
+            } finally {
+                setButtonLoading('loginBtn', false);
+                hideLoading();
+            }
+        }
+        
+        async function register() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            
+            if (!username || !email || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            setButtonLoading('registerBtn', true);
+            showLoading('Initializing Hunter Profile...');
+            
+            try {
+                const result = await ApiService.register(username, email, password);
+                
+                // Save auth data
+                localStorage.setItem('vr_auth_token', result.token);
+                localStorage.setItem('userId', result.user.id);
+                
+                // Update global state
+                authToken = result.token;
+                userData = result.user;
+                currentUser = userData.username;
+                
+                showSuccess('Hunter profile initialized successfully');
+                setTimeout(() => {
+                    showMainApp();
+                }, 1000);
+                
+            } catch (error) {
+                showError(error.message || 'Registration failed');
+            } finally {
+                setButtonLoading('registerBtn', false);
+                hideLoading();
+            }
+        }
+
+        async function adminLogin() {
+            const username = document.getElementById('adminUsername').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            
+            if (!username || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            setButtonLoading('adminLoginBtn', true);
+            showLoading('Accessing Admin Portal...');
+            
+            try {
+                const result = await ApiService.adminLogin(username, password);
+                
+                // Save auth data
+                localStorage.setItem('vr_auth_token', result.token);
+                
+                // Update global state
+                authToken = result.token;
+                currentUser = username;
+                isAdmin = true;
+                
+                showSuccess('Admin access granted');
+                setTimeout(() => {
+                    showAdminApp();
+                }, 1000);
+                
+            } catch (error) {
+                showError(error.message || 'Admin login failed');
+            } finally {
+                setButtonLoading('adminLoginBtn', false);
+                hideLoading();
+            }
+        }
+        
+        function loginDummy() {
+            // Use existing sample user credentials
+            document.getElementById('loginUsername').value = 'SungJinWoo';
+            document.getElementById('loginPassword').value = 'hunter123';
+            login();
+        }
+        
+        function logout() {
+            // Reset all state
+            authToken = null;
+            userData = null;
+            currentUser = null;
+            isAdmin = false;
+            
+            // Remove auth token
+            localStorage.removeItem('vr_auth_token');
+            localStorage.removeItem('userId');
+            
+            // Reset UI to initial state
+            document.getElementById('transitionScreen').classList.remove('hidden');
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('adminApp').classList.add('hidden');
+            
+            // Reset form login
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            
+            // Reset animations
+            setTimeout(() => {
+                const loadingFill = document.querySelector('.loading-fill');
+                loadingFill.style.animation = 'none';
+                loadingFill.offsetHeight; // Trigger reflow
+                loadingFill.style.animation = 'loadingProgress 4s ease-in-out forwards';
+                
+                const continueBtn = document.querySelector('.continue-btn');
+                continueBtn.style.animation = 'none';
+                continueBtn.offsetHeight; // Trigger reflow
+                continueBtn.style.animation = 'fadeInButton 1s ease-in-out 4s forwards';
+            }, 100);
+        }
+
+        function adminLogout() {
+            logout();
+        }
+        
+        async function checkAuth() {
+            const storedToken = localStorage.getItem('vr_auth_token');
+            const storedUserId = localStorage.getItem('userId'); // Get userId from localStorage
+            
+            if (storedToken && storedUserId) {
+                authToken = storedToken;
+                showLoading('Verifying Neural Interface...');
+                
+                try {
+                    // Try to get user profile to validate token
+                    const result = await ApiService.getProfile(storedUserId); // Pass userId to getProfile
+                    
+                    userData = result.user;
+                    currentUser = userData.username;
+                    // Admin status is not returned by getProfile, you might need a separate admin check or include it in user data
+                    // For now, assuming admin status is determined by a specific user ID or role in the backend
+                    isAdmin = (userData.level >= 50); // Simple check for admin based on level, adjust as needed
+                    
+                    if (isAdmin) {
+                        showAdminApp();
+                    } else {
+                        showMainApp();
+                    }
+                    return;
+                } catch (error) {
+                    console.error('Token verification failed:', error);
+                    // Clear invalid data
+                    localStorage.removeItem('vr_auth_token');
+                    localStorage.removeItem('userId');
+                    authToken = null;
+                    userData = null;
+                    currentUser = null;
+                    isAdmin = false;
+                } finally {
+                    hideLoading();
+                }
+            }
+            
+            // Show initial screen if no valid token
+            document.getElementById('transitionScreen').classList.remove('hidden');
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('adminApp').classList.add('hidden');
+        }
+        
+        async function showMainApp() {
+            document.getElementById('transitionScreen').classList.add('hidden');
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('adminApp').classList.add('hidden');
+            
+            await loadUserData();
+        }
+
+        async function showAdminApp() {
+            document.getElementById('transitionScreen').classList.add('hidden');
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('adminApp').classList.remove('hidden');
+            
+            // Update admin UI
+            document.getElementById('adminUsernameDisplay').textContent = currentUser;
+            
+            // Load admin data
+            await loadAdminData();
+        }
+
+        // Load user data from backend
+        async function loadUserData() {
+            try {
+                // Load profile, quests, and leaderboard in parallel
+                const [profileResult, leaderboardResult] = await Promise.all([ // Removed getDailyQuests as it's part of profile
+                    ApiService.getProfile(),
+                    ApiService.getLeaderboard()
+                ]);
+                
+                userData = profileResult.user;
+                // userData.dailyQuests is already part of profileResult.user
+                
+                updateUI();
+                updateQuestUI();
+                updateLeaderboard(leaderboardResult.leaderboard);
+                
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showError('Failed to load user data');
+            }
+        }
+        
+        // Get hunter title based on level
+        function getHunterTitle(level) {
+            if (level >= 50) return "SHADOW MONARCH";
+            else if (level >= 45) return "NATION-LEVEL HUNTER";
+            else if (level >= 40) return "SPECIAL AUTHORITY HUNTER";
+            else if (level >= 35) return "S-RANK HUNTER";
+            else if (level >= 30) return "A-RANK HUNTER";
+            else if (level >= 25) return "B-RANK HUNTER";
+            else if (level >= 20) return "C-RANK HUNTER";
+            else if (level >= 15) return "D-RANK HUNTER";
+            else if (level >= 12) return "E-RANK HUNTER";
+            else if (level >= 10) return "AWAKENED HUNTER";
+            else if (level >= 7) return "TRAINEE HUNTER";
+            else if (level >= 5) return "APPRENTICE TRAINEE";
+            else return "NOVICE TRAINEE";
+        }
+
+        // Get title color based on level
+        function getTitleColor(level) {
+            if (level >= 50) return "#000000"; // Shadow Monarch - Black
+            else if (level >= 45) return "#ff0000"; // Nation Level - Red
+            else if (level >= 40) return "#ff4500"; // Special Authority - Orange Red
+            else if (level >= 35) return "#ffd700"; // S-Rank - Gold
+            else if (level >= 30) return "#ff69b4"; // A-Rank - Hot Pink
+            else if (level >= 25) return "#00bfff"; // B-Rank - Deep Sky Blue
+            else if (level >= 20) return "#32cd32"; // C-Rank - Lime Green
+            else if (level >= 15) return "#ffff00"; // D-Rank - Yellow
+            else if (level >= 12) return "#ffa500"; // E-Rank - Orange
+            else if (level >= 10) return "#8a2be2"; // Awakened - Blue Violet
+            else if (level >= 7) return "#00ffff"; // Trainee - Cyan
+            else if (level >= 5) return "#87ceeb"; // Apprentice - Sky Blue
+            else return "#cccccc"; // Novice - Light Gray
+        }
+
+        // Get fire colors for rank
+        function getFireColors(level) {
+            if (level >= 50) {
+                return {
+                    color1: '#000000',
+                    color2: '#4b0082', 
+                    color3: '#8b00ff',
+                    glow: '#4b0082'
+                };
+            } else if (level >= 45) {
+                return {
+                    color1: '#ff0000',
+                    color2: '#ff4500',
+                    color3: '#ff8c00',
+                    glow: '#ff0000'
+                };
+            } else if (level >= 40) {
+                return {
+                    color1: '#ff4500',
+                    color2: '#ff6500',
+                    color3: '#ff8c00',
+                    glow: '#ff4500'
+                };
+            } else if (level >= 35) {
+                return {
+                    color1: '#ffd700',
+                    color2: '#ffed4a',
+                    color3: '#fff59d',
+                    glow: '#ffd700'
+                };
+            } else if (level >= 30) {
+                return {
+                    color1: '#ff69b4',
+                    color2: '#ff8ace',
+                    color3: '#ffb3e6',
+                    glow: '#ff69b4'
+                };
+            } else if (level >= 25) {
+                return {
+                    color1: '#00bfff',
+                    color2: '#1e90ff',
+                    color3: '#87ceeb',
+                    glow: '#00bfff'
+                };
+            } else if (level >= 20) {
+                return {
+                    color1: '#32cd32',
+                    color2: '#7fff00',
+                    color3: '#98fb98',
+                    glow: '#32cd32'
+                };
+            } else if (level >= 15) {
+                return {
+                    color1: '#ffff00',
+                    color2: '#ffff66',
+                    color3: '#ffff99',
+                    glow: '#ffff00'
+                };
+            } else if (level >= 12) {
+                return {
+                    color1: '#ffa500',
+                    color2: '#ffb347',
+                    color3: '#ffd280',
+                    glow: '#ffa500'
+                };
+            } else if (level >= 10) {
+                return {
+                    color1: '#8a2be2',
+                    color2: '#9966cc',
+                    color3: '#b19cd9',
+                    glow: '#8a2be2'
+                };
+            } else if (level >= 7) {
+                return {
+                    color1: '#00ffff',
+                    color2: '#40e0d0',
+                    color3: '#afeeee',
+                    glow: '#00ffff'
+                };
+            } else if (level >= 5) {
+                return {
+                    color1: '#87ceeb',
+                    color2: '#b0e0e6',
+                    color3: '#e0f6ff',
+                    glow: '#87ceeb'
+                };
+            } else {
+                return {
+                    color1: '#cccccc',
+                    color2: '#e0e0e0',
+                    color3: '#f5f5f5',
+                    glow: '#cccccc'
+                };
+            }
+        }
+
+        // UI update functions
+        function updateUI() {
+            if (!userData) return;
+            
+            // Update navbar
+            document.getElementById('navUsername').textContent = userData.username;
+            document.getElementById('navLevel').textContent = `Level ${userData.level}`;
+            
+            // Update status panel
+            document.getElementById('levelDisplay').textContent = `LV. ${userData.level}`;
+            document.getElementById('expDisplay').textContent = `${userData.exp} / ${userData.expToNext}`;
+            document.getElementById('expBar').style.width = `${(userData.exp / userData.expToNext) * 100}%`;
+            
+            // Update hunter title with dynamic fire effect
+            const hunterTitle = getHunterTitle(userData.level);
+            const titleColor = getTitleColor(userData.level);
+            const fireColors = getFireColors(userData.level);
+            const userTitleElement = document.querySelector('.user-title');
+            
+            // Create fire effect
+            userTitleElement.innerHTML = `<span class="fire-text" data-text="${hunterTitle}">${hunterTitle}</span>`;
+            userTitleElement.style.color = titleColor;
+            
+            // Set CSS custom properties for fire colors
+            const fireTextElement = userTitleElement.querySelector('.fire-text');
+            fireTextElement.style.setProperty('--fire-color-1', fireColors.color1);
+            fireTextElement.style.setProperty('--fire-color-2', fireColors.color2);
+            fireTextElement.style.setProperty('--fire-color-3', fireColors.color3);
+            fireTextElement.style.setProperty('--fire-glow', fireColors.glow);
+            
+            // Apply appropriate animation based on level
+            if (userData.level >= 50) {
+                fireTextElement.style.animation = 'shadowFire 3s ease-in-out infinite';
+            } else if (userData.level >= 35) {
+                fireTextElement.style.animation = 'intenseFire 2s ease-in-out infinite';
+            } else {
+                fireTextElement.style.animation = 'fireFlicker 2s ease-in-out infinite alternate';
+            }
+            
+            // Update HP/MP (simulated based on stats)
+            const maxHp = 100 + (userData.stats.vit * 5);
+            const maxMp = 50 + (userData.stats.int * 3);
+            document.getElementById('hpDisplay').textContent = `${maxHp} / ${maxHp}`;
+            document.getElementById('mpDisplay').textContent = `${maxMp} / ${maxMp}`;
+            
+            // Update stats
+            document.getElementById('strValue').textContent = userData.stats.str;
+            document.getElementById('agiValue').textContent = userData.stats.agi;
+            document.getElementById('intValue').textContent = userData.stats.int;
+            document.getElementById('stmValue').textContent = userData.stats.stm;
+            document.getElementById('vitValue').textContent = userData.stats.vit;
+            document.getElementById('perValue').textContent = userData.stats.per;
+            
+            // Update stat points
+            document.getElementById('statPointsDisplay').textContent = userData.statPoints;
+            
+            // Update stat buttons
+            const buttons = document.querySelectorAll('.stat-plus');
+            buttons.forEach(button => {
+                button.disabled = userData.statPoints === 0;
+            });
+            
+            // Update activity list
+            updateActivityList();
+        }
+        
+        async function updateActivityList() {
+            try {
+                // Activities are now part of the user profile, so we fetch them from there
+                // The getActivities method in ApiService is updated to reflect this
+                const result = await ApiService.getActivities(5); 
+                const activityList = document.getElementById('activityList');
+                activityList.innerHTML = '';
+                
+                if (!result.activities || result.activities.length === 0) {
+                    activityList.innerHTML = '<div style="text-align: center; opacity: 0.6; padding: 20px;">No training sessions logged yet</div>';
+                    return;
+                }
+                
+                result.activities.forEach(activity => {
+                    const activityItem = document.createElement('div');
+                    activityItem.className = 'activity-item';
+                    
+                    let detailsText = `${activity.duration} min`;
+                    if (activity.reps && activity.reps > 0) {
+                        detailsText += ` • ${activity.reps} reps`;
+                    }
+                    detailsText += ` • ${activity.intensity} intensity`;
+                    
+                    activityItem.innerHTML = `
+                        <div>
+                            <div class="activity-name">${activity.name}</div>
+                            <div class="activity-details">${detailsText}</div>
+                            <div class="activity-date">${new Date(activity.date).toLocaleDateString()}</div> <!-- Changed from created_at to date -->
+                        </div>
+                        <div class="activity-exp">+${activity.exp} EXP</div> <!-- Changed from exp_gained to exp -->
+                    `;
+                    activityList.appendChild(activityItem);
+                });
+            } catch (error) {
+                console.error('Error updating activity list:', error);
+            }
+        }
+
+        // Quest UI functions
+        function updateQuestUI() {
+            const questList = document.getElementById('questList');
+            questList.innerHTML = '';
+            
+            if (!userData.dailyQuests || userData.dailyQuests.length === 0) {
+                questList.innerHTML = '<div style="text-align: center; opacity: 0.6; padding: 20px;">No daily quests available</div>';
+                return;
+            }
+            
+            userData.dailyQuests.forEach(quest => {
+                const questItem = document.createElement('div');
+                questItem.className = `quest-item ${quest.completed ? 'completed' : ''}`;
+                
+                const progressPercent = Math.min((quest.progress / quest.target) * 100, 100);
+                
+                questItem.innerHTML = `
+                    <div class="quest-header">
+                        <div class="quest-title">${quest.title}</div>
+                        <div class="quest-reward">+${quest.reward} EXP</div>
+                    </div>
+                    <div class="quest-description">${quest.description}</div>
+                    <div class="quest-progress">
+                        <div class="quest-progress-bar">
+                            <div class="quest-progress-fill" style="width: ${progressPercent}%"></div>
+                        </div>
+                        <div class="quest-progress-text">${quest.progress}/${quest.target}</div>
+                    </div>
+                    <button class="quest-claim-btn" 
+                            onclick="claimQuestReward('${quest.id}')"
+                            ${!quest.completed || quest.claimed ? 'disabled' : ''}>
+                        ${quest.claimed ? 'Claimed' : quest.completed ? 'Claim Reward' : 'In Progress'}
+                    </button>
+                `;
+                
+                questList.appendChild(questItem);
+            });
+        }
+
+        async function claimQuestReward(questId) {
+            try {
+                const result = await ApiService.claimQuest(questId);
+                
+                // Update user data
+                userData = result.user;
+                
+                // Show reward popup
+                showExpPopup(result.reward, `${result.questTitle} Completed!`);
+                
+                // Update UI
+                updateUI();
+                updateQuestUI();
+                
+            } catch (error) {
+                showError(error.message || 'Failed to claim reward');
+            }
+        }
+
+        // Leaderboard functions
+        function updateLeaderboard(leaderboard) {
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = '';
+
+            if (!leaderboard || leaderboard.length === 0) {
+                leaderboardList.innerHTML = '<div style="text-align: center; opacity: 0.6; padding: 20px;">No hunters found</div>';
+                return;
+            }
+
+            leaderboard.forEach((hunter, index) => {
+                const leaderboardItem = document.createElement('div');
+                leaderboardItem.className = 'leaderboard-item';
+                
+                const rankClass = index < 3 ? `rank-${index + 1}` : '';
+                const isCurrentUser = currentUser && hunter.username === currentUser;
+                
+                if (isCurrentUser) {
+                    leaderboardItem.style.borderColor = '#00ffff';
+                    leaderboardItem.style.background = 'rgba(0, 255, 255, 0.1)';
+                }
+
+                leaderboardItem.innerHTML = `
+                    <div class="rank-info">
+                        <div class="rank-number ${rankClass}">${hunter.rank}</div>
+                        <div class="hunter-info">
+                            <div class="hunter-name">${hunter.username}${isCurrentUser ? ' (You)' : ''}</div>
+                            <div class="hunter-stats">Total Stats: ${hunter.totalStats}</div>
+                        </div>
+                    </div>
+                    <div class="hunter-level">LV. ${hunter.level}</div>
+                `;
+                
+                leaderboardList.appendChild(leaderboardItem);
+            });
+        }
+        
+        // Game mechanics
+        async function addActivity() {
+            const name = document.getElementById('activityName').value.trim();
+            const duration = parseInt(document.getElementById('activityDuration').value);
+            const intensity = document.getElementById('activityIntensity').value;
+            const reps = parseInt(document.getElementById('activityReps').value) || 0;
+            
+            if (!name || !duration) {
+                showError('Please fill in training session and duration');
+                return;
+            }
+
+            setButtonLoading('activityBtn', true);
+            showLoading('Processing Training Session...');
+            
+            try {
+                const result = await ApiService.addActivity({
+                    name,
+                    duration,
+                    intensity,
+                    reps
+                });
+                
+                // Update user data
+                userData = result.user;
+                
+                // Show success messages
+                showExpPopup(result.expGained);
+                
+                if (result.levelsGained > 0) {
+                    setTimeout(() => {
+                        showLevelUpPopup(result.levelsGained);
+                        
+                        const newTitle = getHunterTitle(userData.level);
+                        const oldTitle = getHunterTitle(userData.level - result.levelsGained);
+                        
+                        if (newTitle !== oldTitle) {
+                            setTimeout(() => {
+                                showTitleUpgradePopup(newTitle);
+                            }, 1500);
+                        }
+                    }, 1000);
+                }
+                
+                // Clear form
+                document.getElementById('activityName').value = '';
+                document.getElementById('activityDuration').value = '';
+                document.getElementById('activityIntensity').value = 'low';
+                document.getElementById('activityReps').value = '';
+                
+                // Update UI
+                updateUI();
+                updateQuestUI();
+                
+                // Refresh leaderboard
+                const leaderboardResult = await ApiService.getLeaderboard();
+                updateLeaderboard(leaderboardResult.leaderboard);
+                
+            } catch (error) {
+                showError(error.message || 'Failed to log activity');
+            } finally {
+                setButtonLoading('activityBtn', false);
+                hideLoading();
+            }
+        }
+        
+        async function addStat(statName) {
+            try {
+                const result = await ApiService.updateStats(statName);
+                
+                // Update user data
+                userData = result.user;
+                
+                // Show animation
+                const statElement = document.getElementById(statName + 'Value');
+                statElement.style.transform = 'scale(1.2)';
+                statElement.style.color = '#00ff00';
+                
+                setTimeout(() => {
+                    statElement.style.transform = 'scale(1)';
+                    statElement.style.color = '#00ffff';
+                }, 300);
+                
+                updateUI();
+                
+            } catch (error) {
+                showError(error.message || 'Failed to update stat');
+            }
+        }
+        
+        function showExpPopup(exp, title = null) {
+            const popup = document.createElement('div');
+            popup.className = 'exp-popup';
+            popup.textContent = title ? `${title} +${exp} EXP` : `+${exp} EXP Gained`;
+            if (title) {
+                popup.style.background = 'rgba(0, 255, 0, 0.9)';
+            }
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                if (document.body.contains(popup)) {
+                    document.body.removeChild(popup);
+                }
+            }, 2000);
+        }
+        
+        function showLevelUpPopup(levelsGained = 1) {
+            const popup = document.createElement('div');
+            popup.className = 'exp-popup';
+            popup.style.background = 'rgba(255, 215, 0, 0.9)';
+            popup.style.fontSize = '1.5em';
+            
+            if (levelsGained === 1) {
+                popup.textContent = `LEVEL UP! Hunter Level ${userData.level}`;
+            } else {
+                popup.textContent = `LEVEL UP x${levelsGained}! Hunter Level ${userData.level}`;
+            }
+            
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                if (document.body.contains(popup)) {
+                    document.body.removeChild(popup);
+                }
+            }, 3000);
+        }
+        
+        function showTitleUpgradePopup(newTitle) {
+            const popup = document.createElement('div');
+            popup.className = 'exp-popup';
+            popup.style.background = 'linear-gradient(45deg, #ff0080, #00ffff)';
+            popup.style.fontSize = '1.8em';
+            popup.style.fontWeight = '900';
+            popup.style.color = '#ffffff';
+            popup.style.textShadow = '0 0 20px #ffffff';
+            popup.style.border = '3px solid #ffd700';
+            popup.style.boxShadow = '0 0 50px rgba(255, 215, 0, 0.8)';
+            popup.style.animation = 'titleUpgrade 4s ease forwards';
+            popup.innerHTML = `
+                <div style="margin-bottom: 10px;">🏆 RANK UP! 🏆</div>
+                <div style="font-size: 0.8em; color: #ffd700;">${newTitle}</div>
+            `;
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                if (document.body.contains(popup)) {
+                    document.body.removeChild(popup);
+                }
+            }, 4000);
+        }
+
+        // Admin functions
+        function switchAdminTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Activate selected tab
+            const targetTab = Array.from(document.querySelectorAll('.admin-tab')).find(tab => 
+                tab.textContent.trim().toLowerCase().includes(tabName.toLowerCase()) ||
+                tab.onclick.toString().includes(`'${tabName}'`)
+            );
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+        }
+
+        async function loadAdminData() {
+            try {
+                // Load all admin data in parallel
+                await Promise.all([
+                    loadUsers(),
+                    loadActivityTypes(), 
+                    loadQuests()
+                ]);
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                showError('Failed to load admin data');
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const result = await ApiService.getAllUsers();
+                updateUserList(result.users);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                const userList = document.getElementById('userList');
+                userList.innerHTML = '<tr><td colspan="6" style="text-align: center; opacity: 0.6; padding: 20px;">Unable to load users</td></tr>';
+            }
+        }
+
+        function updateUserList(users) {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
+
+            if (!users || users.length === 0) {
+                userList.innerHTML = '<tr><td colspan="6" style="text-align: center; opacity: 0.6; padding: 20px;">No users found</td></tr>';
+                return;
+            }
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.level}</td>
+                    <td>${user.status}</td>
+                    <td>${new Date(user.last_active).toLocaleDateString()}</td>
+                    <td class="actions">
+                        <button class="btn btn-secondary" onclick="editUser('${user.id}')">Edit</button>
+                    </td>
+                `;
+                userList.appendChild(row);
+            });
+        }
+
+        async function editUser(userId) {
+            try {
+                const result = await ApiService.getAllUsers();
+                const user = result.users.find(u => u.id == userId);
+                
+                if (!user) {
+                    showError('User not found');
+                    return;
+                }
+
+                document.getElementById('editUserId').value = user.id;
+                document.getElementById('editUsername').value = user.username;
+                document.getElementById('editLevel').value = user.level;
+                document.getElementById('editStatus').value = user.status || 'active';
+            } catch (error) {
+                showError('Failed to load user data');
+            }
+        }
+
+        async function saveUserChanges() {
+            const userId = document.getElementById('editUserId').value;
+            const username = document.getElementById('editUsername').value;
+            const level = parseInt(document.getElementById('editLevel').value);
+            const status = document.getElementById('editStatus').value;
+
+            if (!userId || !username || isNaN(level)) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            try {
+                await ApiService.updateUser(userId, {
+                    username,
+                    level,
+                    status
+                });
+
+                showSuccess('User updated successfully');
+                await loadUsers();
+            } catch (error) {
+                console.error('Error saving user changes:', error);
+                showError(error.message || 'Failed to update user');
+            }
+        }
+
+        function resetPassword() {
+            const userId = document.getElementById('editUserId').value;
+            if (!userId) {
+                showError('No user selected');
+                return;
+            }
+
+            // In a real system, you would send a password reset email
+            showSuccess(`Password reset initiated for user ID ${userId}`);
+        }
+
+        async function deleteUser() {
+            const userId = document.getElementById('editUserId').value;
+            if (!userId) {
+                showError('No user selected');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete user ID ${userId}? This cannot be undone.`)) {
+                try {
+                    await ApiService.deleteUser(userId);
+                    showSuccess('User deleted successfully');
+                    
+                    // Clear form
+                    document.getElementById('editUserId').value = '';
+                    document.getElementById('editUsername').value = '';
+                    document.getElementById('editLevel').value = '';
+                    document.getElementById('editStatus').value = 'active';
+                    
+                    // Refresh user list
+                    await loadUsers();
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                    showError(error.message || 'Failed to delete user');
+                }
+            }
+        }
+
+        async function loadActivityTypes() {
+            try {
+                const result = await ApiService.getActivityTypes();
+                updateActivityTypesList(result.activityTypes);
+            } catch (error) {
+                console.error('Error loading activity types:', error);
+                const activityList = document.getElementById('activityTypesList');
+                activityList.innerHTML = '<tr><td colspan="5" style="text-align: center; opacity: 0.6; padding: 20px;">Unable to load activity types</td></tr>';
+            }
+        }
+
+        function updateActivityTypesList(activities) {
+            const activityList = document.getElementById('activityTypesList');
+            activityList.innerHTML = '';
+
+            if (!activities || activities.length === 0) {
+                activityList.innerHTML = '<tr><td colspan="5" style="text-align: center; opacity: 0.6; padding: 20px;">No activity types found</td></tr>';
+                return;
+            }
+
+            activities.forEach(activity => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${activity.id}</td>
+                    <td>${activity.name}</td>
+                    <td>${activity.base_exp}</td>
+                    <td>${activity.category}</td>
+                    <td class="actions">
+                        <button class="btn btn-secondary" onclick="editActivityType('${activity.id}')">Edit</button>
+                    </td>
+                `;
+                activityList.appendChild(row);
+            });
+        }
+
+        async function editActivityType(id) {
+            try {
+                const result = await ApiService.getActivityTypes();
+                const activity = result.activityTypes.find(a => a.id == id);
+                
+                if (!activity) {
+                    showError('Activity type not found');
+                    return;
+                }
+
+                document.getElementById('activityTypeId').value = activity.id;
+                document.getElementById('activityTypeName').value = activity.name;
+                document.getElementById('activityTypeExp').value = activity.base_exp;
+                document.getElementById('activityTypeCategory').value = activity.category;
+            } catch (error) {
+                showError('Failed to load activity type data');
+            }
+        }
+
+        async function saveActivityType() {
+            const id = document.getElementById('activityTypeId').value;
+            const name = document.getElementById('activityTypeName').value;
+            const baseExp = parseInt(document.getElementById('activityTypeExp').value);
+            const category = document.getElementById('activityTypeCategory').value;
+
+            if (!name || isNaN(baseExp) || !category) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const activityData = { name, base_exp: baseExp, category };
+                
+                if (id) {
+                    // Update existing
+                    await ApiService.updateActivityType(id, activityData);
+                } else {
+                    // Create new
+                    await ApiService.createActivityType(activityData);
+                }
+
+                showSuccess('Activity type saved successfully');
+                await loadActivityTypes();
+                clearActivityForm();
+            } catch (error) {
+                console.error('Error saving activity type:', error);
+                showError(error.message || 'Failed to save activity type');
+            }
+        }
+
+        function clearActivityForm() {
+            document.getElementById('activityTypeId').value = '';
+            document.getElementById('activityTypeName').value = '';
+            document.getElementById('activityTypeExp').value = '';
+            document.getElementById('activityTypeCategory').value = '';
+        }
+
+        async function deleteActivityType() {
+            const id = document.getElementById('activityTypeId').value;
+            if (!id) {
+                showError('No activity selected');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete this activity type? This cannot be undone.`)) {
+                try {
+                    await ApiService.deleteActivityType(id);
+                    showSuccess('Activity type deleted successfully');
+                    await loadActivityTypes();
+                    clearActivityForm();
+                } catch (error) {
+                    console.error('Error deleting activity type:', error);
+                    showError(error.message || 'Failed to delete activity type');
+                }
+            }
+        }
+
+        async function loadQuests() {
+            try {
+                const result = await ApiService.getAllQuests();
+                updateQuestsList(result.quests);
+            } catch (error) {
+                console.error('Error loading quests:', error);
+                const questsList = document.getElementById('questsList');
+                questsList.innerHTML = '<tr><td colspan="6" style="text-align: center; opacity: 0.6; padding: 20px;">Unable to load quests</td></tr>';
+            }
+        }
+
+        function updateQuestsList(quests) {
+            const questsList = document.getElementById('questsList');
+            questsList.innerHTML = '';
+
+            if (!quests || quests.length === 0) {
+                questsList.innerHTML = '<tr><td colspan="6" style="text-align: center; opacity: 0.6; padding: 20px;">No quests found</td></tr>';
+                return;
+            }
+
+            quests.forEach(quest => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${quest.id}</td>
+                    <td>${quest.title}</td>
+                    <td>${quest.type}</td>
+                    <td>${quest.target}</td>
+                    <td>${quest.reward}</td>
+                    <td class="actions">
+                        <button class="btn btn-secondary" onclick="editQuest('${quest.id}')">Edit</button>
+                    </td>
+                `;
+                questsList.appendChild(row);
+            });
+        }
+
+        async function editQuest(id) {
+            try {
+                const result = await ApiService.getAllQuests();
+                const quest = result.quests.find(q => q.id == id);
+                
+                if (!quest) {
+                    showError('Quest not found');
+                    return;
+                }
+
+                document.getElementById('questId').value = quest.id;
+                document.getElementById('questTitle').value = quest.title;
+                document.getElementById('questDescription').value = quest.description;
+                document.getElementById('questType').value = quest.type;
+                document.getElementById('questTarget').value = quest.target;
+                document.getElementById('questReward').value = quest.reward;
+            } catch (error) {
+                showError('Failed to load quest data');
+            }
+        }
+
+        async function saveQuest() {
+            const id = document.getElementById('questId').value;
+            const title = document.getElementById('questTitle').value;
+            const description = document.getElementById('questDescription').value;
+            const type = document.getElementById('questType').value;
+            const target = parseInt(document.getElementById('questTarget').value);
+            const reward = parseInt(document.getElementById('questReward').value);
+
+            if (!title || !description || !type || isNaN(target) || isNaN(reward)) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const questData = { title, description, type, target, reward };
+                
+                if (id) {
+                    // Update existing
+                    await ApiService.updateQuest(id, questData);
+                } else {
+                    // Create new
+                    await ApiService.createQuest(questData);
+                }
+
+                showSuccess('Quest saved successfully');
+                await loadQuests();
+                clearQuestForm();
+            } catch (error) {
+                console.error('Error saving quest:', error);
+                showError(error.message || 'Failed to save quest');
+            }
+        }
+
+        function clearQuestForm() {
+            document.getElementById('questId').value = '';
+            document.getElementById('questTitle').value = '';
+            document.getElementById('questDescription').value = '';
+            document.getElementById('questType').value = 'duration';
+            document.getElementById('questTarget').value = '';
+            document.getElementById('questReward').value = '';
+        }
+
+        async function deleteQuest() {
+            const id = document.getElementById('questId').value;
+            if (!id) {
+                showError('No quest selected');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete this quest? This cannot be undone.`)) {
+                try {
+                    await ApiService.deleteQuest(id);
+                    showSuccess('Quest deleted successfully');
+                    await loadQuests();
+                    clearQuestForm();
+                } catch (error) {
+                    console.error('Error deleting quest:', error);
+                    showError(error.message || 'Failed to delete quest');
+                }
+            }
+        }
+
+        // Make functions globally available
+        window.showAuthScreen = showAuthScreen;
+        window.showLogin = showLogin;
+        window.showRegister = showRegister;
+        window.showAdminLogin = showAdminLogin;
+        window.login = login;
+        window.register = register;
+        window.adminLogin = adminLogin;
+        window.loginDummy = loginDummy;
+        window.logout = logout;
+        window.adminLogout = adminLogout;
+        window.addActivity = addActivity;
+        window.addStat = addStat;
+        window.claimQuestReward = claimQuestReward;
+        window.switchAdminTab = switchAdminTab;
+        window.editUser = editUser;
+        window.saveUserChanges = saveUserChanges;
+        window.resetPassword = resetPassword;
+        window.deleteUser = deleteUser;
+        window.editActivityType = editActivityType;
+        window.saveActivityType = saveActivityType;
+        window.clearActivityForm = clearActivityForm;
+        window.deleteActivityType = deleteActivityType;
+        window.editQuest = editQuest;
+        window.saveQuest = saveQuest;
+        window.clearQuestForm = clearQuestForm;
+        window.deleteQuest = deleteQuest;
+    </script>
+</body>
+</html>
