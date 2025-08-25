@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solo Leveling Fitness Tracker</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Login/Register Screen */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: radial-gradient(circle, rgba(0,255,255,0.1) 0%, transparent 70%);
+        }
+        
+        .auth-panel {
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .auth-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .auth-title {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px #00ffff;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 40, 80, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            color: #00ffff;
+            font-family: 'Orbitron', monospace;
+            font-size: 16px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            border-color: #ffffff;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #001f3f, #00ffff);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        /* Dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .status-panel {
+            background: rgba(0, 20, 40, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+        }
+        
+        .status-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(138, 43, 226, 0.1), transparent);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+        
+        .panel-header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .level-display {
+            font-size: 2.5em;
+            font-weight: 900;
+            text-shadow: 0 0 20px #00ffff;
+            margin-bottom: 10px;
+        }
+        
+        .job-title {
+            font-size: 1.2em;
+            color: #8a2be2;
+            margin-bottom: 5px;
+        }
+        
+        .user-title {
+            font-size: 1em;
+            color: #ffffff;
+            opacity: 0.8;
+        }
+        
+        .progress-bars {
+            margin: 20px 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .progress-bar {
+            margin-bottom: 15px;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        .progress-track {
+            height: 20px;
+            background: rgba(0, 40, 80, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #00ffff;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #8a2be2);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-item {
+            background: rgba(0, 40, 80, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        
+        .stat-points {
+            text-align: center;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-points h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px #ffd700;
+        }
+        
+        .stat-distribution {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(0, 40, 80, 0.6);
+            border-radius: 8px;
+        }
+        
+        .stat-plus {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-plus:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        .stat-plus:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Activity Panel */
+        .activity-panel {
+            background: rgba(0, 20, 40, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+        }
+        
+        .activity-form {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .activity-form h3 {
+            color: #00ffff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px #00ffff;
+        }
+        
+        .activity-history {
+            margin-top: 30px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .activity-item {
+            background: rgba(0, 40, 80, 0.8);
+            border: 1px solid #00ffff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .activity-name {
+            font-weight: 700;
+            color: #00ffff;
+        }
+        
+        .activity-exp {
+            color: #ffd700;
+            font-weight: 700;
+            text-shadow: 0 0 10px #ffd700;
+        }
+        
+        .activity-date {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background: rgba(0, 20, 40, 0.95);
+            border-bottom: 2px solid #00ffff;
+            padding: 15px 0;
+            box-shadow: 0 2px 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5em;
+            font-weight: 900;
+            text-shadow: 0 0 20px #00ffff;
+        }
+        
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 700;
+            color: #00ffff;
+        }
+        
+        .user-level {
+            font-size: 0.9em;
+            color: #ffd700;
+        }
+        
+        /* Animations */
+        @keyframes levelUp {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes expGain {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
+        }
+        
+        .level-up-animation {
+            animation: levelUp 0.8s ease;
+        }
+        
+        .exp-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 215, 0, 0.9);
+            color: #000;
+            padding: 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.2em;
+            z-index: 1000;
+            animation: expGain 2s ease forwards;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .navbar-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Screen -->
+    <div id="authScreen" class="auth-container">
+        <div class="auth-panel">
+            <h1 class="auth-title">SOLO LEVELING</h1>
+            <h2 class="auth-title" style="font-size: 1.5em; margin-bottom: 40px;">FITNESS TRACKER</h2>
+            
+            <!-- Login Form -->
+            <div id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" placeholder="Enter your username">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password">
+                </div>
+                <div class="form-group">
+                    <button class="btn" onclick="login()">LOGIN</button>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-secondary" onclick="showRegister()">REGISTER</button>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-secondary" onclick="loginDummy()">DUMMY LOGIN</button>
+                </div>
+            </div>
+            
+            <!-- Register Form -->
+            <div id="registerForm" class="hidden">
+                <div class="form-group">
+                    <label for="registerUsername">Username</label>
+                    <input type="text" id="registerUsername" placeholder="Choose a username">
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" placeholder="Create a password">
+                </div>
+                <div class="form-group">
+                    <button class="btn" onclick="register()">REGISTER</button>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-secondary" onclick="showLogin()">BACK TO LOGIN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-brand">LEVELING.COM</div>
+                <div class="navbar-user">
+                    <div class="user-info">
+                        <div class="user-name" id="navUsername">Hunter</div>
+                        <div class="user-level" id="navLevel">Level 1</div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="logout()">LOGOUT</button>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Dashboard -->
+        <div class="container">
+            <div class="dashboard">
+                <!-- Status Panel -->
+                <div class="status-panel">
+                    <div class="panel-header">
+                        <div class="level-display" id="levelDisplay">LV. 1</div>
+                        <div class="job-title">HUNTER</div>
+                        <div class="user-title">THE WEAKEST</div>
+                    </div>
+                    
+                    <div class="progress-bars">
+                        <div class="progress-bar">
+                            <div class="progress-label">
+                                <span>EXP</span>
+                                <span id="expDisplay">0 / 100</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="expBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-label">
+                                <span>HP</span>
+                                <span id="hpDisplay">100 / 100</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="hpBar" style="width: 100%; background: linear-gradient(90deg, #ff4444, #ff8888)"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-label">
+                                <span>MP</span>
+                                <span id="mpDisplay">50 / 50</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="mpBar" style="width: 100%; background: linear-gradient(90deg, #4444ff, #8888ff)"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">STR</div>
+                            <div class="stat-value" id="strValue">10</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">AGI</div>
+                            <div class="stat-value" id="agiValue">10</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">INT</div>
+                            <div class="stat-value" id="intValue">10</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">STM</div>
+                            <div class="stat-value" id="stmValue">10</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">VIT</div>
+                            <div class="stat-value" id="vitValue">10</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">PER</div>
+                            <div class="stat-value" id="perValue">10</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-points">
+                        <h3>STAT POINTS: <span id="statPointsDisplay">0</span></h3>
+                        <div class="stat-distribution">
+                            <span>STR</span>
+                            <button class="stat-plus" onclick="addStat('str')">+</button>
+                        </div>
+                        <div class="stat-distribution">
+                            <span>AGI</span>
+                            <button class="stat-plus" onclick="addStat('agi')">+</button>
+                        </div>
+                        <div class="stat-distribution">
+                            <span>INT</span>
+                            <button class="stat-plus" onclick="addStat('int')">+</button>
+                        </div>
+                        <div class="stat-distribution">
+                            <span>STM</span>
+                            <button class="stat-plus" onclick="addStat('stm')">+</button>
+                        </div>
+                        <div class="stat-distribution">
+                            <span>VIT</span>
+                            <button class="stat-plus" onclick="addStat('vit')">+</button>
+                        </div>
+                        <div class="stat-distribution">
+                            <span>PER</span>
+                            <button class="stat-plus" onclick="addStat('per')">+</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Activity Panel -->
+                <div class="activity-panel">
+                    <div class="activity-form">
+                        <h3>ADD ACTIVITY</h3>
+                        <div class="form-group">
+                            <label for="activityName">Activity Name</label>
+                            <input type="text" id="activityName" placeholder="e.g., Running, Push-ups, Squats">
+                        </div>
+                        <div class="form-group">
+                            <label for="activityDuration">Duration (minutes)</label>
+                            <input type="number" id="activityDuration" placeholder="30">
+                        </div>
+                        <div class="form-group">
+                            <label for="activityIntensity">Intensity</label>
+                            <select id="activityIntensity">
+                                <option value="low">Low (x1)</option>
+                                <option value="medium">Medium (x2)</option>
+                                <option value="high">High (x3)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn" onclick="addActivity()">ADD ACTIVITY</button>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-history">
+                        <h3>RECENT ACTIVITIES</h3>
+                        <div id="activityList">
+                            <!-- Activities will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let currentUser = null;
+        let userData = {
+            username: '',
+            email: '',
+            level: 1,
+            exp: 0,
+            expToNext: 100,
+            statPoints: 0,
+            stats: {
+                str: 10,
+                agi: 10,
+                int: 10,
+                stm: 10,
+                vit: 10,
+                per: 10
+            },
+            activities: []
+        };
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+        
+        // Authentication functions
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+        }
+        
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+        
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Simulate login (in real app, this would call your backend)
+            const savedUser = localStorage.getItem('user_' + username);
+            if (savedUser) {
+                userData = JSON.parse(savedUser);
+                currentUser = username;
+                showMainApp();
+            } else {
+                alert('User not found. Please register first.');
+            }
+        }
+        
+        function register() {
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            if (!username || !email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Check if user exists
+            if (localStorage.getItem('user_' + username)) {
+                alert('Username already exists');
+                return;
+            }
+            
+            // Create new user
+            userData = {
+                username: username,
+                email: email,
+                level: 1,
+                exp: 0,
+                expToNext: 100,
+                statPoints: 0,
+                stats: {
+                    str: 10,
+                    agi: 10,
+                    int: 10,
+                    stm: 10,
+                    vit: 10,
+                    per: 10
+                },
+                activities: []
+            };
+            
+            localStorage.setItem('user_' + username, JSON.stringify(userData));
+            currentUser = username;
+            showMainApp();
+        }
+        
+        function loginDummy() {
+            // Create dummy user data
+            userData = {
+                username: 'Kenji',
+                email: 'hunter@sololeveling.com',
+                level: 5,
+                exp: 250,
+                expToNext: 600,
+                statPoints: 3,
+                stats: {
+                    str: 25,
+                    agi: 30,
+                    int: 20,
+                    stm: 35,
+                    vit: 28,
+                    per: 22
+                },
+                activities: [
+                    { name: 'Daily Quest: Push-ups', duration: 30, exp: 50, date: new Date().toLocaleDateString() },
+                    { name: 'Running', duration: 45, exp: 90, date: new Date().toLocaleDateString() },
+                    { name: 'Strength Training', duration: 60, exp: 120, date: new Date().toLocaleDateString() }
+                ]
+            };
+            
+            currentUser = 'SungJinWoo';
+            showMainApp();
+        }
+        
+        function logout() {
+            if (currentUser) {
+                localStorage.setItem('user_' + currentUser, JSON.stringify(userData));
+            }
+            currentUser = null;
+            userData = null;
+            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+        
+        function checkAuth() {
+            // In a real app, check if user is authenticated
+            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+        
+        function showMainApp() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            updateUI();
+        }
+        
+        // UI update functions
+        function updateUI() {
+            // Update navbar
+            document.getElementById('navUsername').textContent = userData.username;
+            document.getElementById('navLevel').textContent = `Level ${userData.level}`;
+            
+            // Update status panel
+            document.getElementById('levelDisplay').textContent = `LV. ${userData.level}`;
+            document.getElementById('expDisplay').textContent = `${userData.exp} / ${userData.expToNext}`;
+            document.getElementById('expBar').style.width = `${(userData.exp / userData.expToNext) * 100}%`;
+            
+            // Update HP/MP (simulated based on stats)
+            const maxHp = 100 + (userData.stats.vit * 5);
+            const maxMp = 50 + (userData.stats.int * 3);
+            document.getElementById('hpDisplay').textContent = `${maxHp} / ${maxHp}`;
+            document.getElementById('mpDisplay').textContent = `${maxMp} / ${maxMp}`;
+            
+            // Update stats
+            document.getElementById('strValue').textContent = userData.stats.str;
+            document.getElementById('agiValue').textContent = userData.stats.agi;
+            document.getElementById('intValue').textContent = userData.stats.int;
+            document.getElementById('stmValue').textContent = userData.stats.stm;
+            document.getElementById('vitValue').textContent = userData.stats.vit;
+            document.getElementById('perValue').textContent = userData.stats.per;
+            
+            // Update stat points
+            document.getElementById('statPointsDisplay').textContent = userData.statPoints;
+            
+            // Update stat buttons
+            const buttons = document.querySelectorAll('.stat-plus');
+            buttons.forEach(button => {
+                button.disabled = userData.statPoints === 0;
+            });
+            
+            // Update activity list
+            updateActivityList();
+        }
+        
+        function updateActivityList() {
+            const activityList = document.getElementById('activityList');
+            activityList.innerHTML = '';
+            
+            userData.activities.slice(-5).reverse().forEach(activity => {
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item';
+                activityItem.innerHTML = `
+                    <div>
+                        <div class="activity-name">${activity.name}</div>
+                        <div class="activity-date">${activity.date}</div>
+                    </div>
+                    <div class="activity-exp">+${activity.exp} EXP</div>
+                `;
+                activityList.appendChild(activityItem);
+            });
+        }
+        
+        // Game mechanics
+        function addActivity() {
+            const name = document.getElementById('activityName').value;
+            const duration = parseInt(document.getElementById('activityDuration').value);
+            const intensity = document.getElementById('activityIntensity').value;
+            
+            if (!name || !duration) {
+                alert('Please fill in activity name and duration');
+                return;
+            }
+            
+            // Calculate EXP based on duration and intensity
+            let baseExp = duration * 2; // 2 EXP per minute
+            let multiplier = 1;
+            
+            switch (intensity) {
+                case 'low': multiplier = 1; break;
+                case 'medium': multiplier = 2; break;
+                case 'high': multiplier = 3; break;
+            }
+            
+            const expGained = baseExp * multiplier;
+            
+            // Add activity to history
+            const activity = {
+                name: name,
+                duration: duration,
+                exp: expGained,
+                date: new Date().toLocaleDateString()
+            };
+            
+            userData.activities.push(activity);
+            
+            // Add EXP and check for level up
+            addExp(expGained);
+            
+            // Clear form
+            document.getElementById('activityName').value = '';
+            document.getElementById('activityDuration').value = '';
+            document.getElementById('activityIntensity').value = 'low';
+            
+            // Show EXP popup
+            showExpPopup(expGained);
+            
+            // Update UI
+            updateUI();
+        }
+        
+        function addExp(exp) {
+            userData.exp += exp;
+            
+            // Check for level up
+            while (userData.exp >= userData.expToNext) {
+                levelUp();
+            }
+        }
+        
+        function levelUp() {
+            userData.exp -= userData.expToNext;
+            userData.level++;
+            userData.statPoints += 5; // Give 5 stat points per level
+            userData.expToNext = Math.floor(userData.expToNext * 1.5); // Increase EXP requirement
+            
+            // Level up animation
+            const levelDisplay = document.getElementById('levelDisplay');
+            levelDisplay.classList.add('level-up-animation');
+            
+            setTimeout(() => {
+                levelDisplay.classList.remove('level-up-animation');
+            }, 800);
+            
+            // Show level up notification
+            showLevelUpPopup();
+        }
+        
+        function addStat(statName) {
+            if (userData.statPoints > 0) {
+                userData.stats[statName]++;
+                userData.statPoints--;
+                updateUI();
+                
+                // Show stat increase animation
+                const statElement = document.getElementById(statName + 'Value');
+                statElement.style.transform = 'scale(1.2)';
+                statElement.style.color = '#00ff00';
+                
+                setTimeout(() => {
+                    statElement.style.transform = 'scale(1)';
+                    statElement.style.color = '#00ffff';
+                }, 300);
+            }
+        }
+        
+        function showExpPopup(exp) {
+            const popup = document.createElement('div');
+            popup.className = 'exp-popup';
+            popup.textContent = `+${exp} EXP`;
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                document.body.removeChild(popup);
+            }, 2000);
+        }
+        
+        function showLevelUpPopup() {
+            const popup = document.createElement('div');
+            popup.className = 'exp-popup';
+            popup.style.background = 'rgba(255, 215, 0, 0.9)';
+            popup.style.fontSize = '1.5em';
+            popup.textContent = `LEVEL UP! LV.${userData.level}`;
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                document.body.removeChild(popup);
+            }, 3000);
+        }
+        
+        // Auto-save user data
+        setInterval(() => {
+            if (currentUser) {
+                localStorage.setItem('user_' + currentUser, JSON.stringify(userData));
+            }
+        }, 30000); // Save every 30 seconds
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                if (!document.getElementById('authScreen').classList.contains('hidden')) {
+                    // In auth screen
+                    if (!document.getElementById('loginForm').classList.contains('hidden')) {
+                        login();
+                    } else {
+                        register();
+                    }
+                } else {
+                    // In main app
+                    if (document.getElementById('activityName') === document.activeElement ||
+                        document.getElementById('activityDuration') === document.activeElement) {
+                        addActivity();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
